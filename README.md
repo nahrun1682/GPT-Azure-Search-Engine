@@ -40,87 +40,90 @@
 * ワークショップ中のIDEの協力と標準化のために、AMLコンピュートインスタンスとJupyter Labが使用されます。これには、RG内にAzure Machine Learning Workspaceがデプロイされている必要があります
   * 注：Azure Machine Learningワークスペースで十分なコアコンピュートのクォータがあることを確認してください
 
----
-
-# Architecture
-
-![Architecture](./images/GPT-Smart-Search-Architecture.jpg "Architecture")
-
-## Flow
-
-1. The user asks a question.
-2. In the app, an OpenAI GPT-4 LLM uses a clever prompt to determine which source to use based on the user input
-3. Four types of sources are available:
-   * 3a. Azure SQL Database - contains COVID-related statistics in the US.
-   * 3b. Azure Bing Search API - provides access to the internet allowing scenerios like: QnA on public websites .
-   * 3c. Azure Cognitive Search - contains AI-enriched documents from Blob Storage (10k PDFs and 90k articles).
-     * 3c.1. Uses OpenAI to vectorize the top K document chunks
-     * 3c.2. Fills up the vector-based indexes on-demand.
-     * 3c.3. Gets the Top N Chunks by doing a vector search on vector-based indexes.
-   * 3d. CSV Tabular File - contains COVID-related statistics in the US.
-4. The app retrieves the result from the source and crafts the answer.
-5. The tuple (Question and Answer) is saved to CosmosDB to keep a record of the interaction and further analysis.
-6. The answer is delivered to the user.
 
 ---
 
-## Demo
+# アーキテクチャ
+
+![アーキテクチャ](./images/GPT-Smart-Search-Architecture.jpg "アーキテクチャ")
+
+## フロー
+
+1. ユーザーが質問をします。
+2. アプリ内で、OpenAI GPT-4 LLMが賢いプロンプトを使用して、ユーザー入力に基づいて使用するソースを決定します。
+3. 4種類のソースが利用可能です：
+   * 3a. Azure SQLデータベース - アメリカのCOVID関連の統計情報を含む。
+   * 3b. Azure Bing Search API - 公共のウェブサイトでのQnAのようなシナリオを可能にするインターネットへのアクセスを提供。
+   * 3c. Azure Cognitive Search - BlobストレージからのAIによって豊富なドキュメント（10kのPDFと90kの記事）を含む。
+     * 3c.1. OpenAIを使用して上位Kのドキュメントチャンクをベクトル化
+     * 3c.2. 需要に応じてベクトルベースのインデックスを埋める。
+     * 3c.3. ベクトルベースのインデックスでベクトル検索を行い、上位Nのチャンクを取得。
+   * 3d. CSV形式の表ファイル - アメリカのCOVID関連の統計情報を含む。
+4. アプリはソースから結果を取得し、答えを作成します。
+5. タプル（質問と回答）は、対話の記録とさらなる分析のためにCosmosDBに保存されます。
+6. 答えがユーザーに提供されます。
+
+---
+
+## デモ
 
 https://gptsmartsearch.azurewebsites.net/
 
-To open the Bot in MS Teams, click [HERE](https://teams.microsoft.com/l/chat/0/0?users=28:5d583679-8196-4673-9d77-c294c010bca5)
+MS Teamsでボットを開くには、[こちら](https://teams.microsoft.com/l/chat/0/0?users=28:5d583679-8196-4673-9d77-c294c010bca5)をクリックしてください。
 
 ---
 
-## 🔧**Features**
+## 🔧**機能**
 
-- Uses [Bot Framework](https://dev.botframework.com/) and [Bot Service](https://azure.microsoft.com/en-us/products/bot-services/) to Host the Bot API Backend and to expose it to multiple channels including MS Teams.
-- 100% Python.
-- Uses [Azure Cognitive Services](https://azure.microsoft.com/en-us/products/cognitive-services/) to index and enrich unstructured documents: Detect Language, OCR images, Key-phrases extraction, entity recognition (persons, emails, addresses, organizations, urls).
-- Uses Vector Search Capabilities of Azure Cognitive Search to provide the best semantic answer.
-- Creates vectors on-demand as users interact with the system. (versus vectorizing the whole datalake at the beginning)
-- Uses [LangChain](https://langchain.readthedocs.io/en/latest/) as a wrapper for interacting with Azure OpenAI , vector stores, constructing prompts and creating agents.
-- Multi-Lingual (ingests, indexes and understand any language)
-- Multi-Index -> multiple search indexes
-- Tabular Data Q&A with CSV files and SQL flavor Databases
-- Uses [Azure AI Document Intelligence SDK (former Form Recognizer)](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-3.0.0) to parse complex/large PDF documents
-- Uses [Bing Search API](https://www.microsoft.com/en-us/bing/apis) to power internet searches and Q&A over public websites.
-- Uses CosmosDB as persistent memory to save user's conversations.
-- Uses [Streamlit](https://streamlit.io/) to build the Frontend web application in python.
+- [Bot Framework](https://dev.botframework.com/)と[Bot Service](https://azure.microsoft.com/en-us/products/bot-services/)を使用して、Bot APIバックエンドをホストし、MS Teamsを含む複数のチャンネルに公開。
+- 100% Python。
+- [Azure Cognitive Services](https://azure.microsoft.com/en-us/products/cognitive-services/)を使用して非構造化ドキュメントをインデックス化および強化：言語の検出、OCR画像、キーフレーズの抽出、エンティティ認識（人物、メール、住所、組織、URL）。
+- Azure Cognitive Searchのベクトル検索機能を使用して最良のセマンティック回答を提供。
+- ユーザーがシステムと対話するにつれて、オンデマンドでベクトルを作成（最初に全体のデータレイクをベクトル化するのとは対照的）。
+- [LangChain](https://langchain.readthedocs.io/en/latest/)を使用して、Azure OpenAI、ベクトルストア、プロンプトの構築、エージェントの作成との対話のためのラッパーとして。
+- 多言語対応（任意の言語を摂取、インデックス化、理解）。
+- マルチインデックス -> 複数の検索インデックス。
+- CSVファイルおよびSQLフレーバーデータベースを使用した表形式のデータQ&A。
+- [Azure AIドキュメントインテリジェンスSDK（旧Form Recognizer）](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-3.0.0)を使用して複雑な/大規模なPDFドキュメントを解析。
+- [Bing Search API](https://www.microsoft.com/en-us/bing/apis)を使用してインターネット検索と公共のウェブサイトでのQ&Aを強化。
+- CosmosDBを使用してユーザーの会話を永続的に保存。
+- [Streamlit](https://streamlit.io/)を使用して、PythonでフロントエンドWebアプリケーションを構築。
+
+もちろんです、以下はそのMarkdownテキストを日本語に翻訳したものです。
 
 ---
 
-## **Steps to Run the POC/Accelerator**
+## **POC/アクセラレーターを実行する手順**
 
-Note: (Pre-requisite) You need to have an Azure OpenAI service already created
+注:（前提条件）すでにAzure OpenAIサービスを作成している必要があります。
 
-1. Fork this repo to your Github account.
-2. In Azure OpenAI studio, deploy these models: **Make sure that the deployment name is the same as the model name.**
+1. このリポジトリを自分のGithubアカウントにフォークします。
+2. Azure OpenAIスタジオで、以下のモデルをデプロイします：**デプロイメント名はモデル名と同じであることを確認してください。**
    - "gpt-35-turbo"
    - "gpt-35-turbo-16k"
    - "gpt-4"
    - "gpt-4-32k"
    - "text-embedding-ada-002"
-3. Create a Resource Group where all the assets of this accelerator are going to be. Azure OpenAI can be in different RG or a different Subscription.
-4. ClICK BELOW to create all the Azure Infrastructure needed to run the Notebooks (Azure Cognitive Search, Cognitive Services, etc):
+3. このアクセラレーターのすべての資産が配置されるリソースグループを作成します。Azure OpenAIは異なるRGまたは異なるサブスクリプションにすることができます。
+4. 以下をクリックして、ノートブックを実行するために必要なすべてのAzureインフラストラクチャを作成します（Azure Cognitive Search、Cognitive Servicesなど）：
 
-[![Deploy To Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fpablomarin%2FGPT-Azure-Search-Engine%2Fmain%2Fazuredeploy.json)
+[![Azureへデプロイ](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fpablomarin%2FGPT-Azure-Search-Engine%2Fmain%2Fazuredeploy.json)
 
-**Note**: If you have never created a `Cognitive services Multi-Service account` before, please create one manually in the azure portal to read and accept the Responsible AI terms. Once this is deployed, delete this and then use the above deployment button.
+**注**: 以前に「Cognitive services Multi-Service account」を作成したことがない場合は、Azureポータルで手動で作成し、Responsible AIの条件を読んで同意してください。これがデプロイされたら、上記のデプロイメントボタンを使用してこれを削除してください。
 
-5. Clone your Forked repo to your AML Compute Instance. If your repo is private, see below in Troubleshooting section how to clone a private repo.
-6. Make sure you run the notebooks on a **Python 3.10 conda enviroment**
-7. Install the dependencies on your machine (make sure you do the below pip comand on the same conda environment that you are going to run the notebooks. For example, in AZML compute instance run:
+5. フォークしたリポジトリをAML Compute Instanceにクローンします。リポジトリがプライベートの場合、トラブルシューティングセクションでプライベートリポジトリをどのようにクローンするかを参照してください。
+6. ノートブックは**Python 3.10 conda環境**で実行することを確認してください。
+7. 依存関係を自分のマシンにインストールします（以下のpipコマンドを、ノートブックを実行するのと同じconda環境で実行してください。例えば、AZMLコンピュートインスタンスで実行する場合：
 
-```
+```zsh
 conda activate azureml_py310_sdkv2
 pip install -r ./common/requirements.txt
 ```
 
-You might get some pip dependancies errors, but that is ok, the libraries were installed correctly regardless of the error.
+いくつかのpip依存関係エラーが出るかもしれませんが、それは問題ありません。エラーに関わらず、ライブラリは正しくインストールされています。
 
-8. Edit the file `credentials.env` with your own values from the services created in step 4.
-9. **Run the Notebooks in order**. They build up on top of each other.
+8. `credentials.env`ファイルを編集して、ステップ4で作成されたサービスから自分自身の値に更新します。
+9. **ノートブックを順番に実行してください**。それぞれが前のものに基づいています。
 
 ---
 
@@ -128,16 +131,16 @@ You might get some pip dependancies errors, but that is ok, the libraries were i
 
 <summary>FAQs</summary>
 
-## **FAQs**
+## **よくある質問**
 
-1. **Why use Azure Cognitive Search engine to provide the context for the LLM and not fine tune the LLM instead?**
+1. **LLMにコンテキストを提供するためにAzure Cognitive Searchエンジンを使用する理由は何ですか？なぜLLMを微調整しないのですか？**
 
-A: Quoting the [OpenAI documentation](https://platform.openai.com/docs/guides/fine-tuning): "GPT-3 has been pre-trained on a vast amount of text from the open internet. When given a prompt with just a few examples, it can often intuit what task you are trying to perform and generate a plausible completion. This is often called "few-shot learning.
-Fine-tuning improves on few-shot learning by training on many more examples than can fit in the prompt, letting you achieve better results on a wide number of tasks. Once a model has been fine-tuned, you won't need to provide examples in the prompt anymore. This **saves costs and enables lower-latency requests**"
+A: [OpenAIのドキュメント](https://platform.openai.com/docs/guides/fine-tuning)に引用すると：「GPT-3は、オープンインターネットからの膨大なテキストデータで事前にトレーニングされています。少数の例だけでプロンプトが与えられると、多くの場合、何を試みているのかを直感的に理解し、適切な完成を生成できます。これは一般に「フューショット学習」と呼ばれています。
+微調整は、プロンプトに収まるよりも多くの例でトレーニングを行うことで、フューショット学習を改善し、多くのタスクでより良い結果を得ることができます。モデルが微調整されると、プロンプトで例を提供する必要はもうありません。これにより**コストを節約し、低レイテンシのリクエストが可能になります**」
 
-However, fine-tuning the model requires providing hundreds or thousands of Prompt and Completion tuples, which are essentially query-response samples. The purpose of fine-tuning is not to give the LLM knowledge of the company's data but to provide it with examples so it can perform tasks really well without requiring examples on every prompt.
+ただし、モデルを微調整するには、数百または数千のプロンプトと完成のタプル（基本的にはクエリとレスポンスのサンプル）を提供する必要があります。微調整の目的は、LLMに企業のデータの知識を与えるのではなく、各プロンプトで例を必要とせずにタスクを非常にうまく実行できるようにするための例を提供することです。
 
-There are cases where fine-tuning is necessary, such as when the examples contain proprietary data that should not be exposed in prompts or when the language used is highly specialized, as in healthcare, pharmacy, or other industries or use cases where the language used is not commonly found on the internet.
+プロンプトで公開すべきでない独自のデータが含まれている場合や、使用される言語が医療、薬局、またはインターネット上で一般的に見られない言語が使用されている他の業界やユースケースなど、微調整が必要なケースもあります。
 
 </details>
 
@@ -147,25 +150,27 @@ There are cases where fine-tuning is necessary, such as when the examples contai
 
 ## Troubleshooting
 
-Steps to clone a private repo:
+## トラブルシューティング
 
-- On your Terminal, Paste the text below, substituting in your GitHub email address. [Generate a new SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key).
+プライベートリポジトリをクローンする手順：
+
+- ターミナルを開き、以下のテキストを貼り付けて、自分のGitHubのメールアドレスに置き換えます。[新しいSSHキーを生成する](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key)。
 
 ```bash
 ssh-keygen -t ed25519 -C "your_email@example.com"
 ```
 
-- Copy the SSH public key to your clipboard. [Add a new SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key).
+- SSH公開キーをクリップボードにコピーします。[新しいSSHキーを追加する](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key)。
 
 ```bash
 cat ~/.ssh/id_ed25519.pub
-# Then select and copy the contents of the id_ed25519.pub file
-# displayed in the terminal to your clipboard
+# ターミナルに表示されるid_ed25519.pubファイルの内容を
+# 選択してクリップボードにコピーします
 ```
 
-- On GitHub, go to **Settings-> SSH and GPG Keys-> New SSH Key**
-- In the "Title" field, add a descriptive label for the new key. "AML Compute". In the "Key" field, paste your public key.
-- Clone your private repo
+- GitHubで、**設定-> SSHとGPGキー-> 新しいSSHキー**に移動します。
+- 「タイトル」フィールドには、新しいキーにわかりやすいラベルを追加します。例：「AML Compute」。"Key"フィールドには、公開キーを貼り付けます。
+- プライベートリポジトリをクローンします。
 
 ```bash
 git clone git@github.com:YOUR-USERNAME/YOUR-REPOSITORY.git
@@ -173,4 +178,4 @@ git clone git@github.com:YOUR-USERNAME/YOUR-REPOSITORY.git
 
 </details>
 
-# Disclaimer: The attached diagrams and sample code are provided AS IS without warranty of any kind, and should not be interpreted as an offer or commitment on the part of Microsoft, and Microsoft cannot guarantee the accuracy of any information presented. MICROSOFT MAKES NO WARRANTIES, EXPRESS OR IMPLIED, IN THIS CODE SAMPLE.
+# 免責事項：添付された図やサンプルコードは、一切の保証なしで「現状のまま」提供されます。これらはMicrosoftの提供または約束と解釈すべきではありません。また、Microsoftは提供される情報の正確性を保証するものではありません。このコードサンプルに対して、MICROSOFTは明示または暗黙を問わず、一切の保証を行いません.
